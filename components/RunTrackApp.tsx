@@ -19,7 +19,9 @@ import { WeekStrip } from "./WeekStrip";
 
 type SheetState = { key: string; ran?: boolean; pickDate?: boolean };
 
-const RAN_TOASTS = ["bien ahí ✓", "un cuadradito más en verde", "sumado ✓"];
+const CANVAS = { w: 1280, h: 860 };
+
+const RAN_TOASTS =["bien ahí ✓", "un cuadradito más en verde", "sumado ✓"];
 
 export default function RunTrackApp() {
   const { db, ready, setDay, removeDay, replaceAll, cloud } = useRuns();
@@ -38,6 +40,23 @@ export default function RunTrackApp() {
     refresh();
     document.addEventListener("visibilitychange", refresh);
     return () => document.removeEventListener("visibilitychange", refresh);
+  }, []);
+
+  // Desktop: el layout está diseñado para un lienzo de 1280×860 y se escala
+  // para llenar la ventana (más grande o más chica) sin scroll.
+  useEffect(() => {
+    const fit = () => {
+      const root = document.documentElement;
+      if (window.innerWidth < 900) {
+        root.style.removeProperty("--ui-scale");
+        return;
+      }
+      const scale = Math.min(window.innerWidth / CANVAS.w, window.innerHeight / CANVAS.h);
+      root.style.setProperty("--ui-scale", String(Math.max(0.7, Math.min(scale, 2.2))));
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
   }, []);
 
   const showToast = useCallback((msg: string) => {

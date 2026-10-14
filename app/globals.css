@@ -1056,7 +1056,16 @@ html, body { overflow: hidden; }
   .cal-month { font-size: 26px; min-width: 160px; }
 }
 
-@media (min-width: 900px) and (max-height: 780px) {
+/* desktop escalado: lienzo de 1280×860 que crece o se achica con la ventana */
+@media (min-width: 900px) {
+  .phone {
+    zoom: var(--ui-scale, 1);
+    height: calc(100dvh / var(--ui-scale, 1));
+    max-width: min(1200px, calc(100vw / var(--ui-scale, 1)));
+  }
+}
+
+@media (min-width: 900px) and (max-height: 600px) {
   .view-hoy .quote { display: none; }
   .views > .view-hoy.is-active { grid-template-areas: "today week" "today minis" "today board" "today board"; }
   .today .h1 { font-size: 38px; }
