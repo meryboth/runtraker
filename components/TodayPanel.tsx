@@ -53,7 +53,7 @@ export function TodayPanel({ dayKey, db, onSave, onDelete }: Props) {
         </p>
         <div className="today-meta">
           {place && <span className="today-place"><span aria-hidden="true">{place.emoji}</span> {place.label}</span>}
-          {pace && <span className="muted">a {fmtPace(pace)} el km</span>}
+          {pace && <span className="muted">ritmo {fmtPace(pace)} min/km</span>}
         </div>
         <div className="today-foot">
           <span />

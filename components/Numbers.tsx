@@ -31,7 +31,7 @@ export function Numbers({ s, onDemo }: { s: Stats; onDemo: () => void }) {
         <span className="hl hl-g anno" data-anno={`el ${pct}%`}>{s.runs} de {s.days} días</span>.
         {" "}Sumaste <span className="hl hl-y">{fmtKm(Math.round(s.km * 10) / 10)} km</span> en{" "}
         <span className="hl hl-b">{fmtLong(s.sec)}</span>.
-        {s.avgPace && <> Tu ritmo promedio es <span className="hl hl-o">{fmtPace(s.avgPace)} por km</span>.</>}
+        {s.avgPace && <> Tu ritmo promedio es <span className="hl hl-o">{fmtPace(s.avgPace)} min/km</span>.</>}
         {" "}
         {s.streak
           ? <>Llevás <span className="hl hl-p">{s.streak} {plural(s.streak, "día", "días")} seguidos</span>.</>
@@ -42,7 +42,7 @@ export function Numbers({ s, onDemo }: { s: Stats; onDemo: () => void }) {
       <div className="tiles area-tiles">
         <Tile label="mejor racha" value={`${s.bestStreak}`} unit={plural(s.bestStreak, "día", "días")} sub={s.bestStreak === s.streak && s.streak > 0 ? "¡es esta!" : `ahora: ${s.streak}`} />
         <Tile label="la más larga" value={fmtKm(s.longest!.km)} unit="km" sub={shortDate(fromKey(s.longest!.key))} />
-        <Tile label="mejor ritmo" value={s.bestPace ? fmtPace(s.bestPace.pace) : "—"} unit="/km" sub={s.bestPace ? shortDate(fromKey(s.bestPace.key)) : "cargá tiempos"} />
+        <Tile label="mejor ritmo" value={s.bestPace ? fmtPace(s.bestPace.pace) : "—"} unit="min/km" sub={s.bestPace ? shortDate(fromKey(s.bestPace.key)) : "cargá tiempos"} />
         <Tile label="promedio" value={fmtKm(Math.round((s.km / s.runs) * 10) / 10)} unit="km" sub="por salida" />
       </div>
 

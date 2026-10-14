@@ -149,7 +149,7 @@ export function DayForm({ dayKey, db, active, presetRan, onSave, onDelete, onCan
             <em>seg</em>
           </span>
         </div>
-        <p className="pace-preview">{pace ? `≈ ${fmtPace(pace)} el km` : shake ? "falta la distancia ↑" : ""}</p>
+        <p className="pace-preview">{pace ? `ritmo ${fmtPace(pace)} min/km` : shake ? "falta la distancia ↑" : ""}</p>
       </div>
 
       <div className="sheet-actions">

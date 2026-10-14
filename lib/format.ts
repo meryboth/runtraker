@@ -18,10 +18,10 @@ export function fmtLong(sec: number) {
   return h ? `${h} h ${m} min` : `${m} min`;
 }
 
-/** 5'29" */
+/** Ritmo como se dice en Argentina: 5:29 (min/km). */
 export function fmtPace(secPerKm: number) {
   const r = Math.round(secPerKm);
-  return `${Math.floor(r / 60)}'${pad(r % 60)}"`;
+  return `${Math.floor(r / 60)}:${pad(r % 60)}`;
 }
 
 export const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
