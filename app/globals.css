@@ -1071,3 +1071,86 @@ html, body { overflow: hidden; }
   .today .h1 { font-size: 38px; }
   .story { font-size: 23px; }
 }
+
+/* =====================================================================
+   desktop alineado: una grilla, mismos bordes y un solo espacio entre bloques
+   ===================================================================== */
+
+@media (min-width: 900px) {
+  :root { --gutter: 24px; }
+
+  /* header: logo y pestañas alineados con los bordes del contenido */
+  .tabs { margin-right: 0; padding: 0; }
+  .tab:last-child { padding-right: 0; }
+
+  /* tarjetas con el mismo borde a mano */
+  .area-week, .area-board, .area-wd, .area-places {
+    position: relative;
+    isolation: isolate;
+    padding: 18px 22px;
+  }
+  .area-week::before, .area-board::before, .area-wd::before, .area-places::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--ink);
+    border-radius: var(--wobble-2);
+    filter: url(#rough);
+    z-index: -1;
+    pointer-events: none;
+  }
+  .tile::before { border-width: 2px; }
+  .area-week .h2, .area-board .h2, .area-wd .h2, .places .h2 { font-size: 16px; margin-bottom: 10px; }
+
+  /* ---- hoy: la tarjeta de la izquierda mide lo mismo que la columna derecha ---- */
+  .views > .view-hoy.is-active {
+    grid-template-columns: minmax(360px, 5fr) 7fr;
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+      "today week"
+      "today minis"
+      "today board"
+      "quote quote";
+    column-gap: var(--gutter);
+    row-gap: var(--gutter);
+    align-items: stretch;
+  }
+  .area-today { display: flex; min-height: 0; }
+  .area-today > .today-panel { flex: 1; display: flex; flex-direction: column; }
+  .today-panel .day-form { flex: 1; display: flex; flex-direction: column; }
+  .today-panel .sheet-actions { margin-top: auto; padding-top: 12px; }
+  .today-panel .today-foot { margin-top: auto; }
+
+  .minis { gap: var(--gutter); margin: 0; }
+  .area-board { display: flex; flex-direction: column; min-height: 0; }
+  .area-board .board-wrap { flex: 1; display: flex; align-items: center; }
+  .area-board .legend { justify-content: flex-end; }
+
+  .view-hoy .quote { grid-area: quote; justify-self: center; align-self: end; max-width: 760px; }
+
+  /* ---- números: dos columnas, dos filas, bordes compartidos ---- */
+  .view-numeros .num-grid {
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: 7fr 5fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "story tiles"
+      "wd    places";
+    column-gap: var(--gutter);
+    row-gap: var(--gutter);
+    align-items: stretch;
+  }
+  .area-story .story { margin-top: 8px; }
+  .area-tiles { gap: var(--gutter); grid-auto-rows: 1fr; }
+  .area-wd, .area-places { min-height: 0; }
+  .area-wd { display: flex; flex-direction: column; }
+  .area-wd .wd-list { flex: 1; align-content: space-evenly; }
+  .places { margin: 0; }
+
+  /* ---- historial: el calendario ocupa todo el ancho del contenido ---- */
+  .view-historial { max-width: none; margin: 0; }
+  .cal-grid { gap: 10px; }
+  .cal-day { transform: rotate(calc(var(--rot, 0deg) * .3)); }
+  .cal-day:hover:not(:disabled) { transform: rotate(calc(var(--rot, 0deg) * .3)) scale(1.04); }
+}
