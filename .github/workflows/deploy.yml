@@ -1,0 +1,48 @@
+name: Deploy a GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # GitHub Pages sirve el sitio en /runtraker/
+      NEXT_PUBLIC_BASE_PATH: /runtraker
+      # Valores públicos por diseño (van al navegador). La seguridad la dan las reglas RLS de la tabla.
+      NEXT_PUBLIC_SUPABASE_URL: https://yzowhmorsfqccvdfsxzo.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6b3dobW9yc2ZxY2N2ZGZzeHpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5OTUxNjMsImV4cCI6MjEwNzU3MTE2M30.YjpraTVtxviYildG0_usRV6lpUqT9dd_ynwNY8nIiXE
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: touch out/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
