@@ -53,4 +53,6 @@ Una fila por día y por usuario en `public.run_days` (`day`, `ran`, `km`, `sec`,
 
 Cada push a `main` corre [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml): build estático con `NEXT_PUBLIC_BASE_PATH=/runtraker` y publicación en GitHub Pages.
 
+Además, [`.github/workflows/keepalive.yml`](.github/workflows/keepalive.yml) consulta la base una vez por día para que el plan gratis de Supabase no pause el proyecto por inactividad. Si la consulta falla, GitHub avisa por mail.
+
 Para el login por mail en producción, la URL `https://meryboth.github.io/runtraker/` tiene que estar en Supabase → Authentication → URL Configuration → Redirect URLs.
