@@ -692,3 +692,15 @@ button.cell:hover { outline: 1.5px solid var(--accent); outline-offset: 1px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+.sync-error {
+  margin: -4px 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--accent-2);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: break-word;
+  user-select: text;
+}

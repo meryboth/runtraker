@@ -65,7 +65,10 @@ export function AccountSheet({ open, cloud, onClose }: { open: boolean; cloud: C
               desde el celu o la compu y vas a ver lo mismo.
             </p>
             {cloud.sync === "error" && (
-              <p className="account-text muted">No pudimos hablar con la base. Lo que anotes queda guardado acá igual.</p>
+              <>
+                <p className="account-text muted">Hubo un problema con la nube. Lo que anotes queda guardado acá igual.</p>
+                {cloud.syncError && <p className="sync-error">{cloud.syncError}</p>}
+              </>
             )}
             <div className="sheet-actions">
               <button className="btn" onClick={onClose}>listo</button>
