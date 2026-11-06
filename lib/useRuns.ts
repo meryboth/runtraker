@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
+import { mergeDays } from "./merge";
 import { TABLE, fromRows, supabase, toRow, toRows, type RunRow } from "./supabase";
 import type { DayEntry, RunDB } from "./types";
 
@@ -46,7 +47,9 @@ export function useRuns() {
     return () => data.subscription.unsubscribe();
   }, []);
 
-  // Al iniciar sesión: si la nube está vacía subimos lo local; si no, la nube manda.
+  // Al iniciar sesión (y en cada carga con sesión): combinamos lo local con la nube.
+  // Los días que solo están en este dispositivo se suben; si un día está en los dos, gana la nube.
+  // Nunca se borra nada local por iniciar sesión.
   useEffect(() => {
     if (!supabase) return;
     if (!userId) { setSync("local"); return; }
@@ -60,17 +63,16 @@ export function useRuns() {
       if (error) { console.error(error); setSync("error"); return; }
 
       const local = read();
-      if (data.length === 0 && Object.keys(local).length > 0) {
-        const { error: upErr } = await sb.from(TABLE).upsert(toRows(local, userId));
-        if (!cancelled) setSync(upErr ? "error" : "ok");
-        if (upErr) console.error(upErr);
-        return;
-      }
+      const { merged, onlyLocal } = mergeDays(local, fromRows(data as RunRow[]));
 
-      const remote = fromRows(data as RunRow[]);
-      write(remote);
-      setDb(remote);
-      setSync("ok");
+      write(merged);
+      setDb(merged);
+
+      if (Object.keys(onlyLocal).length === 0) { setSync("ok"); return; }
+      const { error: upErr } = await sb.from(TABLE).upsert(toRows(onlyLocal, userId));
+      if (cancelled) return;
+      if (upErr) console.error(upErr);
+      setSync(upErr ? "error" : "ok");
     })();
 
     return () => { cancelled = true; };
