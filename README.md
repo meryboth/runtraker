@@ -1,6 +1,6 @@
-# runtrack.
+# runtrack
 
-Un diario de corridas que parece hecho a mano. Anotá cada día si corriste, dónde (afuera o adentro), la distancia y el tiempo, y mirá tu año en un tablero verde estilo GitHub.
+Un diario de corridas con estética editorial. Anotá cada día si corriste, dónde (afuera o adentro), la distancia y el tiempo, y mirá tu año en un tablero estilo GitHub.
 
 **Probala:** https://meryboth.github.io/runtraker/
 
@@ -8,9 +8,9 @@ Un diario de corridas que parece hecho a mano. Anotá cada día si corriste, dó
 
 ## Qué hace
 
-- **Hoy:** cargás el día directo desde el home: corriste o no, afuera o adentro, distancia y tiempo (el ritmo se calcula solo).
-- **Esta semana:** siete círculos dibujados a mano, con los km y dónde corriste.
-- **El tablero:** un cuadradito por día, más verde cuanto más corriste. Tocás cualquiera para editarlo.
+- **Hoy:** un panel naranja con tus km de la semana y el formulario del día: corriste o no, afuera o adentro, distancia y tiempo (el ritmo se calcula solo, en min/km). En la compu es una pantalla partida: el panel a la izquierda y tus tarjetas a la derecha.
+- **Esta semana:** siete círculos con los km de cada día.
+- **El tablero:** un cuadradito por día, más naranja cuanto más corriste. Tocás cualquiera para editarlo.
 - **Números:** totales, rachas, mejor ritmo, qué días de la semana corrés (y cuáles se te escapan) y cuánto corrés afuera vs. adentro.
 - **Historial:** calendario mes a mes.
 - **Sin scroll:** cada pantalla entra entera, en el celular y en la compu.
@@ -19,7 +19,7 @@ Un diario de corridas que parece hecho a mano. Anotá cada día si corriste, dó
 ## Stack
 
 - [Next.js 15](https://nextjs.org) (App Router, export estático) + React 19 + TypeScript
-- CSS propio: tipografías [Shantell Sans](https://fonts.google.com/specimen/Shantell+Sans) y [Caveat](https://fonts.google.com/specimen/Caveat), bordes con filtros SVG para el trazo a mano
+- CSS propio: tipografía [Inter Tight](https://fonts.google.com/specimen/Inter+Tight), fondo gris claro, tarjetas blancas y un solo acento naranja
 - [Supabase](https://supabase.com) para cuentas (link mágico por mail) y sincronización, con Row Level Security
 - GitHub Pages para el hosting
 
