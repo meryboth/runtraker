@@ -5,7 +5,7 @@ import type { Cloud } from "@/lib/useRuns";
 
 const SYNC_LABEL: Record<Cloud["sync"], string> = {
   off: "",
-  local: "sincronizar",
+  local: "Iniciar sesión",
   loading: "guardando…",
   ok: "en la nube ✓",
   error: "sin conexión",
@@ -15,7 +15,12 @@ const SYNC_LABEL: Record<Cloud["sync"], string> = {
 export function CloudBadge({ cloud, onClick }: { cloud: Cloud; onClick: () => void }) {
   if (!cloud.enabled) return null;
   return (
-    <button className={`cloud-badge is-${cloud.sync}`} onClick={onClick} title={cloud.email ?? "guardar en la nube"}>
+    <button
+      className={`cloud-badge is-${cloud.sync}`}
+      onClick={onClick}
+      title={cloud.email ?? "iniciá sesión para ver tus días en todos tus dispositivos"}
+      aria-label={cloud.email ? `cuenta: ${cloud.email}` : "iniciar sesión"}
+    >
       <svg viewBox="0 0 28 20" aria-hidden="true">
         <path d="M7.5 17.2c-3 .1-5.2-1.8-5.1-4.4.1-2.3 2-4 4.4-3.9.5-3.6 3.4-6.2 7-6.1 3.2.1 5.7 2.3 6.3 5.3 2.7-.2 5 1.7 5.1 4.3.1 2.6-2 4.7-4.8 4.8-4.3.1-8.6 0-12.9 0z" />
       </svg>
@@ -69,8 +74,8 @@ export function AccountSheet({ open, cloud, onClose }: { open: boolean; cloud: C
           </>
         ) : (
           <>
-            <p className="note">para no perder nada</p>
-            <h2 className="h1 sheet-title" id="accountTitle">guardá tus días<br />en la nube</h2>
+            <p className="note">tus km en el celu y en la compu</p>
+            <h2 className="h1 sheet-title" id="accountTitle">Iniciar sesión</h2>
             {status === "sent" ? (
               <p className="account-text">
                 Listo, te mandamos un link a <span className="hl hl-y">{email}</span>. Abrilo en este mismo navegador y
@@ -78,7 +83,7 @@ export function AccountSheet({ open, cloud, onClose }: { open: boolean; cloud: C
               </p>
             ) : (
               <>
-                <p className="account-text">Te mandamos un link por mail. Sin contraseñas.</p>
+                <p className="account-text">Poné tu mail y te mandamos un link para entrar, sin contraseña. Usá el mismo mail en todos tus dispositivos y vas a ver los mismos días.</p>
                 <label className="text-field">
                   <span>tu mail</span>
                   <input

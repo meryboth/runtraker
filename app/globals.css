@@ -475,7 +475,9 @@ button.cell:hover { outline: 1.5px solid var(--accent); outline-offset: 1px; }
 .cloud-badge span { display: none; }
 .cloud-badge.is-ok svg { fill: var(--accent); stroke: var(--accent); }
 .cloud-badge.is-error { color: var(--accent); }
-.cloud-badge.is-local svg { stroke-dasharray: 3 3; }
+/* sin sesión: el botón tiene que verse (y decir qué hace), también en el celular */
+.cloud-badge.is-local { padding: 0 14px 0 12px; background: var(--ink); color: #fff; font-size: 13px; font-weight: 500; }
+.cloud-badge.is-local span, .cloud-badge.is-error span { display: inline; }
 .cloud-badge.is-loading svg { animation: bob 1s ease-in-out infinite; }
 @keyframes bob { 50% { transform: translateY(-2px); } }
 
