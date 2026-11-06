@@ -29,90 +29,158 @@ export function CloudBadge({ cloud, onClick }: { cloud: Cloud; onClick: () => vo
   );
 }
 
-/** Hoja de cuenta: login con link mágico por mail, o cerrar sesión. */
+const isEmail = (v: string) => /^\S+@\S+\.\S+$/.test(v.trim());
+
+type Mode = "password" | "code";
+
+/** Hoja de cuenta: entrar con contraseña o con código por mail; con sesión, crear contraseña o salir. */
 export function AccountSheet({ open, cloud, onClose }: { open: boolean; cloud: Cloud; onClose: () => void }) {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
-  const [error, setError] = useState("");
-
-  async function send() {
-    if (!/^\S+@\S+\.\S+$/.test(email)) {
-      setStatus("error");
-      setError("ese mail no parece válido");
-      return;
-    }
-    setStatus("sending");
-    const { error } = await cloud.signIn(email.trim());
-    if (error) {
-      setStatus("error");
-      setError(error);
-    } else {
-      setStatus("sent");
-    }
-  }
-
   return (
     <>
       <div className={`backdrop${open ? " open" : ""}`} onClick={onClose} />
       <div className={`sheet${open ? " open" : ""}`} role="dialog" aria-modal="true" aria-hidden={!open} aria-labelledby="accountTitle">
         <div className="grip" />
-        {cloud.email ? (
-          <>
-            <p className="note">{SYNC_LABEL[cloud.sync]}</p>
-            <h2 className="h1 sheet-title" id="accountTitle">tu cuenta</h2>
-            <p className="account-text">
-              Tus días se guardan en la nube con <span className="hl hl-g">{cloud.email}</span>. Entrá con el mismo mail
-              desde el celu o la compu y vas a ver lo mismo.
-            </p>
-            {cloud.sync === "error" && (
-              <>
-                <p className="account-text muted">Hubo un problema con la nube. Lo que anotes queda guardado acá igual.</p>
-                {cloud.syncError && <p className="sync-error">{cloud.syncError}</p>}
-              </>
-            )}
-            <div className="sheet-actions">
-              <button className="btn" onClick={onClose}>listo</button>
-              <button className="link link--danger" onClick={() => { cloud.signOut(); onClose(); }}>cerrar sesión</button>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="note">tus km en el celu y en la compu</p>
-            <h2 className="h1 sheet-title" id="accountTitle">Iniciar sesión</h2>
-            {status === "sent" ? (
-              <p className="account-text">
-                Listo, te mandamos un link a <span className="hl hl-y">{email}</span>. Abrilo en este mismo navegador y
-                quedás adentro. Lo que ya anotaste se sube solo.
-              </p>
-            ) : (
-              <>
-                <p className="account-text">Poné tu mail y te mandamos un link para entrar, sin contraseña. Usá el mismo mail en todos tus dispositivos y vas a ver los mismos días.</p>
-                <label className="text-field">
-                  <span>tu mail</span>
-                  <input
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    placeholder="vos@mail.com"
-                    value={email}
-                    onChange={(e) => { setEmail(e.target.value); setStatus("idle"); }}
-                    onKeyDown={(e) => e.key === "Enter" && send()}
-                  />
-                </label>
-                <p className="pace-preview">{status === "error" ? error : ""}</p>
-              </>
-            )}
-            <div className="sheet-actions">
-              {status === "sent" ? (
-                <button className="btn" onClick={onClose}>dale</button>
-              ) : (
-                <button className="btn btn--primary" onClick={send} disabled={status === "sending"}>
-                  {status === "sending" ? "mandando…" : "mandarme el link"}
-                </button>
-              )}
-            </div>
-          </>
+        {cloud.email ? <SignedIn cloud={cloud} onClose={onClose} /> : <SignIn cloud={cloud} />}
+      </div>
+    </>
+  );
+}
+
+function SignIn({ cloud }: { cloud: Cloud }) {
+  const [mode, setMode] = useState<Mode>("password");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [codeSent, setCodeSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function run(fn: () => Promise<{ error: string | null }>) {
+    setBusy(true);
+    setError("");
+    const { error } = await fn();
+    setBusy(false);
+    if (error) setError(error);
+    return !error;
+  }
+
+  async function submit() {
+    if (!isEmail(email)) return setError("Ese mail no parece válido.");
+    const mail = email.trim();
+    if (mode === "password") {
+      if (!password) return setError("Escribí tu contraseña.");
+      await run(() => cloud.signInWithPassword(mail, password));
+    } else if (!codeSent) {
+      if (await run(() => cloud.sendCode(mail))) setCodeSent(true);
+    } else {
+      if (code.replace(/\D/g, "").length < 6) return setError("El código tiene 6 números.");
+      await run(() => cloud.verifyCode(mail, code.replace(/\D/g, "")));
+    }
+  }
+
+  const onEnter = (e: React.KeyboardEvent) => e.key === "Enter" && submit();
+  const switchMode = (m: Mode) => { setMode(m); setError(""); setCodeSent(false); setCode(""); };
+
+  const cta = busy
+    ? "un segundo…"
+    : mode === "password" ? "Entrar" : codeSent ? "Entrar con el código" : "Mandarme el código";
+
+  return (
+    <>
+      <p className="note">tus km en el celu y en la compu</p>
+      <h2 className="h1 sheet-title" id="accountTitle">Iniciar sesión</h2>
+
+      <div className="choice auth-modes" role="tablist">
+        <button role="tab" aria-selected={mode === "password"} className={`btn pill${mode === "password" ? " on" : ""}`} onClick={() => switchMode("password")}>Contraseña</button>
+        <button role="tab" aria-selected={mode === "code"} className={`btn pill${mode === "code" ? " on" : ""}`} onClick={() => switchMode("code")}>Código por mail</button>
+      </div>
+
+      <label className="text-field">
+        <span>tu mail</span>
+        <input
+          type="email" inputMode="email" autoComplete="email" placeholder="vos@mail.com"
+          value={email} onChange={(e) => { setEmail(e.target.value); setError(""); }} onKeyDown={onEnter}
+          disabled={mode === "code" && codeSent}
+        />
+      </label>
+
+      {mode === "password" && (
+        <label className="text-field">
+          <span>contraseña</span>
+          <input
+            type="password" autoComplete="current-password" placeholder="••••••"
+            value={password} onChange={(e) => { setPassword(e.target.value); setError(""); }} onKeyDown={onEnter}
+          />
+        </label>
+      )}
+
+      {mode === "code" && codeSent && (
+        <>
+          <p className="account-text auth-hint">
+            Te mandamos un código a <b>{email.trim()}</b>. Escribilo acá, en este navegador.
+          </p>
+          <label className="text-field">
+            <span>código de 6 números</span>
+            <input
+              className="code-input" inputMode="numeric" autoComplete="one-time-code" placeholder="000000" maxLength={6}
+              value={code} onChange={(e) => { setCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setError(""); }} onKeyDown={onEnter}
+            />
+          </label>
+        </>
+      )}
+
+      {mode === "password" && (
+        <p className="account-text auth-hint">¿Todavía no tenés contraseña? Entrá con <button className="link" onClick={() => switchMode("code")}>código por mail</button> y creala desde tu cuenta.</p>
+      )}
+
+      <p className="auth-error" role="alert">{error}</p>
+
+      <div className="sheet-actions">
+        <button className="btn btn--primary" onClick={submit} disabled={busy}>{cta}</button>
+        {mode === "code" && codeSent && (
+          <button className="link" onClick={() => { setCodeSent(false); setCode(""); setError(""); }}>Cambiar el mail o pedir otro código</button>
         )}
+      </div>
+    </>
+  );
+}
+
+function SignedIn({ cloud, onClose }: { cloud: Cloud; onClose: () => void }) {
+  const [pw, setPw] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function savePassword() {
+    if (pw.length < 6) return setMsg({ ok: false, text: "La contraseña tiene que tener al menos 6 caracteres." });
+    setBusy(true);
+    const { error } = await cloud.setPassword(pw);
+    setBusy(false);
+    setMsg(error ? { ok: false, text: error } : { ok: true, text: "Listo. Ya podés entrar con tu mail y esta contraseña desde cualquier dispositivo." });
+    if (!error) setPw("");
+  }
+
+  return (
+    <>
+      <p className="note">{SYNC_LABEL[cloud.sync]}</p>
+      <h2 className="h1 sheet-title" id="accountTitle">Tu cuenta</h2>
+      <p className="account-text">
+        Tus días se guardan en la nube con <b>{cloud.email}</b>. Entrá con el mismo mail desde el celu o la compu y vas a ver lo mismo.
+      </p>
+      {cloud.sync === "error" && cloud.syncError && <p className="sync-error">{cloud.syncError}</p>}
+
+      <label className="text-field">
+        <span>crear o cambiar tu contraseña</span>
+        <input
+          type="password" autoComplete="new-password" placeholder="mínimo 6 caracteres"
+          value={pw} onChange={(e) => { setPw(e.target.value); setMsg(null); }} onKeyDown={(e) => e.key === "Enter" && savePassword()}
+        />
+      </label>
+      <p className={msg?.ok ? "auth-ok" : "auth-error"} role="status">{msg?.text ?? ""}</p>
+
+      <div className="sheet-actions">
+        <button className="btn btn--primary" onClick={savePassword} disabled={busy || !pw}>{busy ? "guardando…" : "Guardar contraseña"}</button>
+        <button className="btn btn--ghost" onClick={onClose}>Listo</button>
+        <button className="link link--danger" onClick={() => { cloud.signOut(); onClose(); }}>Cerrar sesión</button>
       </div>
     </>
   );

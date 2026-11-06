@@ -704,3 +704,14 @@ button.cell:hover { outline: 1.5px solid var(--accent); outline-offset: 1px; }
   word-break: break-word;
   user-select: text;
 }
+
+/* ---------- login: contraseña o código ---------- */
+.auth-modes { margin-bottom: 6px; }
+.auth-modes .btn.pill { font-size: 13px; }
+.auth-hint { margin: 8px 0 0; font-size: 13px; color: var(--ink-2); }
+.auth-hint .link { padding: 0; font-size: 13px; color: var(--ink); }
+.auth-error, .auth-ok { margin: 6px 0 0; min-height: 18px; font-size: 13px; line-height: 1.35; }
+.auth-error { color: var(--accent); }
+.auth-ok { color: var(--ink); }
+.code-input { letter-spacing: .4em; font-variant-numeric: tabular-nums; }
+.text-field input:disabled { opacity: .6; }

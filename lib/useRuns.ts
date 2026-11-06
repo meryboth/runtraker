@@ -27,6 +27,17 @@ function write(db: RunDB) {
 /** off = sin Supabase configurado · local = configurado pero sin sesión */
 export type SyncState = "off" | "local" | "loading" | "ok" | "error";
 
+/** Errores de login más comunes, en castellano. */
+function authError(e: { message?: string; code?: string }): string {
+  const m = (e.message ?? "").toLowerCase();
+  if (m.includes("invalid login credentials")) return "Mail o contraseña incorrectos. Si todavía no creaste una contraseña, entrá con código y creala desde tu cuenta.";
+  if (m.includes("token has expired") || m.includes("invalid") && m.includes("otp")) return "El código no es válido o ya venció. Pedí uno nuevo.";
+  if (m.includes("password should be")) return "La contraseña tiene que tener al menos 6 caracteres.";
+  if (m.includes("rate limit") || m.includes("security purposes")) return "Pediste muchos mails seguidos. Esperá un minuto y probá de nuevo.";
+  if (m.includes("same") && m.includes("password")) return "Esa ya es tu contraseña actual.";
+  return e.message ?? "Algo salió mal. Probá de nuevo.";
+}
+
 /** Texto legible de un error de Supabase/PostgREST (mensaje + detalle + código). */
 function errText(e: unknown): string {
   if (!e) return "";
@@ -72,7 +83,18 @@ export function useRuns() {
       setSyncError(null);
       const { data, error } = await sb.from(TABLE).select("day, ran, km, sec, place");
       if (cancelled) return;
-      if (error) { console.error(error); setSyncError(`No se pudo leer la nube: ${errText(error)}`); setSync("error"); return; }
+      if (error) {
+        console.error(error);
+        const text = errText(error);
+        if (/jwt|token|PGRST30/i.test(text)) {
+          // La sesión guardada ya no vale: la cerramos acá y la app vuelve a mostrar "Iniciar sesión".
+          await sb.auth.signOut({ scope: "local" });
+          return;
+        }
+        setSyncError(`No se pudo leer la nube: ${text}`);
+        setSync("error");
+        return;
+      }
 
       const local = read();
       const { merged, onlyLocal } = mergeDays(local, fromRows(data as RunRow[]));
@@ -157,13 +179,35 @@ export function useRuns() {
     [userId, pushRemote],
   );
 
-  const signIn = useCallback(async (email: string) => {
+  /** Entrar con mail y contraseña. */
+  const signInWithPassword = useCallback(async (email: string, password: string) => {
+    if (!supabase) return { error: "Supabase no está configurado" };
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error: error ? authError(error) : null };
+  }, []);
+
+  /** Manda un mail con un código de 6 números (y el link, que también sirve). */
+  const sendCode = useCallback(async (email: string) => {
     if (!supabase) return { error: "Supabase no está configurado" };
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/` },
     });
-    return { error: error?.message ?? null };
+    return { error: error ? authError(error) : null };
+  }, []);
+
+  /** Valida el código que llegó por mail, en este mismo navegador. */
+  const verifyCode = useCallback(async (email: string, token: string) => {
+    if (!supabase) return { error: "Supabase no está configurado" };
+    const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
+    return { error: error ? authError(error) : null };
+  }, []);
+
+  /** Crea o cambia la contraseña de la cuenta con sesión iniciada. */
+  const setPassword = useCallback(async (password: string) => {
+    if (!supabase) return { error: "Supabase no está configurado" };
+    const { error } = await supabase.auth.updateUser({ password });
+    return { error: error ? authError(error) : null };
   }, []);
 
   const signOut = useCallback(async () => {
@@ -181,7 +225,10 @@ export function useRuns() {
       email: session?.user.email ?? null,
       sync,
       syncError,
-      signIn,
+      signInWithPassword,
+      sendCode,
+      verifyCode,
+      setPassword,
       signOut,
     },
   };
