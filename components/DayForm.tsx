@@ -121,7 +121,6 @@ export function DayForm({ dayKey, db, active, presetRan, onSave, onDelete, onCan
                 className={`place-pill${place === p ? " on" : ""}`}
                 onClick={() => edit({ place: p })}
               >
-                <span className="place-emoji" aria-hidden="true">{PLACES[p].emoji}</span>
                 {PLACES[p].label}
               </button>
             ))}

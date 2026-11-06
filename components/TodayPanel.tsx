@@ -1,75 +1,97 @@
 "use client";
 
 import { useState } from "react";
-import { fmtClock, fmtKm, fmtPace } from "@/lib/format";
-import { PATHS } from "@/lib/hand";
+import { DAYS, MONTHS_SHORT, dow } from "@/lib/dates";
+import { fmtClock, fmtKm, fmtPace, plural } from "@/lib/format";
 import { paceOf } from "@/lib/stats";
 import { PLACES, type DayEntry, type RunDB } from "@/lib/types";
 import { DayForm } from "./DayForm";
-import { Arrow } from "./Hand";
 
 type Props = {
   dayKey: string;
   db: RunDB;
+  today: Date;
+  weekKm: number;
+  streak: number;
   onSave: (key: string, entry: DayEntry) => void;
   onDelete: (key: string) => void;
 };
 
-/** Tarjeta de hoy: si no anotaste, el formulario está ahí mismo; si ya anotaste, el resumen. */
-export function TodayPanel({ dayKey, db, onSave, onDelete }: Props) {
+/**
+ * Panel de hoy: bloque naranja con el número grande de la semana y el título,
+ * y adentro una tarjeta blanca con el formulario (o el resumen si ya anotaste).
+ */
+export function TodayPanel({ dayKey, db, today, weekKm, streak, onSave, onDelete }: Props) {
   const entry = db[dayKey];
   const [editing, setEditing] = useState(false);
   const showForm = !entry || editing;
 
-  if (showForm) {
-    return (
-      <div className="box today today-panel">
-        <p className="note">
-          {entry ? "cambiá lo que haga falta" : "no te olvides de anotarlo"} <Arrow d={PATHS.arrowDown} />
-        </p>
-        <h1 className="h1">¿corriste hoy?</h1>
-        <DayForm
-          dayKey={dayKey}
-          db={db}
-          active={showForm}
-          onSave={(k, e) => { onSave(k, e); setEditing(false); }}
-          onDelete={entry ? (k) => { onDelete(k); setEditing(false); } : undefined}
-          onCancel={entry ? () => setEditing(false) : undefined}
-        />
-      </div>
-    );
-  }
-
-  if (entry.ran) {
-    const pace = paceOf(entry);
-    const place = entry.place ? PLACES[entry.place] : null;
-    return (
-      <div className="box today today-panel">
-        <p className="note">bien ahí ✓</p>
-        <h1 className="h1">hoy corriste</h1>
-        <p className="today-result">
-          <span className="hl hl-g">{fmtKm(entry.km)} km</span>
-          {entry.sec > 0 && <> en <span className="hl hl-y">{fmtClock(entry.sec)}</span></>}
-        </p>
-        <div className="today-meta">
-          {place && <span className="today-place"><span aria-hidden="true">{place.emoji}</span> {place.label}</span>}
-          {pace && <span className="muted">ritmo {fmtPace(pace)} min/km</span>}
-        </div>
-        <div className="today-foot">
-          <span />
-          <button className="link" onClick={() => setEditing(true)}>editar</button>
-        </div>
-      </div>
-    );
-  }
+  const title = !entry || editing
+    ? <>¿Corriste <span>hoy?</span></>
+    : entry.ran
+      ? <>Hoy <span>corriste</span></>
+      : <>Hoy <span>descansaste</span></>;
 
   return (
-    <div className="box today today-panel">
-      <p className="note">descansar también es entrenar</p>
-      <h1 className="h1">hoy<br />descansaste</h1>
-      <div className="today-foot">
-        <span className="muted">¿al final saliste?</span>
-        <button className="link" onClick={() => setEditing(true)}>cambiar</button>
+    <section className="hero today-panel">
+      <div className="hero-top">
+        <span className="chip">{DAYS[dow(today)]} {today.getDate()} {MONTHS_SHORT[today.getMonth()]}</span>
+        <span className="chip chip--ghost">{streak} {plural(streak, "día", "días")} de racha</span>
+      </div>
+
+      <div className="hero-figure">
+        <span className="hero-number">{fmtKm(Math.round(weekKm * 10) / 10)}</span>
+        <span className="hero-unit">km<br />esta semana</span>
+      </div>
+
+      <h1 className="hero-title">{title}</h1>
+
+      <div className="hero-card">
+        {showForm ? (
+          <DayForm
+            dayKey={dayKey}
+            db={db}
+            active={showForm}
+            onSave={(k, e) => { onSave(k, e); setEditing(false); }}
+            onDelete={entry ? (k) => { onDelete(k); setEditing(false); } : undefined}
+            onCancel={entry ? () => setEditing(false) : undefined}
+          />
+        ) : entry.ran ? (
+          <Summary entry={entry} onEdit={() => setEditing(true)} />
+        ) : (
+          <div className="summary">
+            <p className="meta">descanso</p>
+            <p className="summary-line">Descansar también es entrenar.</p>
+            <button className="btn btn--ghost" onClick={() => setEditing(true)}>¿Al final saliste? Cambiar</button>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function Summary({ entry, onEdit }: { entry: Extract<DayEntry, { ran: true }>; onEdit: () => void }) {
+  const pace = paceOf(entry);
+  const place = entry.place ? PLACES[entry.place] : null;
+  return (
+    <div className="summary">
+      <div className="summary-stats">
+        <div>
+          <p className="meta">distancia</p>
+          <p className="summary-value">{fmtKm(entry.km)}<small>km</small></p>
+        </div>
+        <div>
+          <p className="meta">tiempo</p>
+          <p className="summary-value">{entry.sec > 0 ? fmtClock(entry.sec) : "—"}</p>
+        </div>
+        <div>
+          <p className="meta">ritmo</p>
+          <p className="summary-value">{pace ? fmtPace(pace) : "—"}<small>min/km</small></p>
+        </div>
+      </div>
+      <div className="summary-foot">
+        {place && <span className="chip chip--light">{place.label}</span>}
+        <button className="btn btn--ghost" onClick={onEdit}>Editar</button>
       </div>
     </div>
   );

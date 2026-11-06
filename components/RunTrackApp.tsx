@@ -149,7 +149,7 @@ export default function RunTrackApp() {
           {view === "hoy" && (
             <section className="view is-active view-hoy">
               <div className="area-today">
-                <TodayPanel dayKey={tk} db={db} onSave={save} onDelete={deleteDay} />
+                <TodayPanel dayKey={tk} db={db} today={today} weekKm={stats.weekKm} streak={stats.streak} onSave={save} onDelete={deleteDay} />
               </div>
 
               <div className="block area-week">

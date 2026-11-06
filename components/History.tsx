@@ -5,7 +5,7 @@ import { DAYS_LETTER, MONTHS, addDays, dow, keyOf } from "@/lib/dates";
 import { fmtKm, plural } from "@/lib/format";
 import { jitter } from "@/lib/hand";
 import { levelOf } from "@/lib/stats";
-import { placeEmoji, type RunDB } from "@/lib/types";
+import type { RunDB } from "@/lib/types";
 
 type Props = {
   db: RunDB;
@@ -73,7 +73,6 @@ export function History({ db, today, onOpen, onDemo, onWipe }: Props) {
             >
               <span className="cal-n">{d.getDate()}</span>
               {e?.ran && <span className="cal-km">{fmtKm(Math.round(e.km * 10) / 10)}</span>}
-              {e?.ran && placeEmoji(e) && <span className="cal-place" aria-hidden="true">{placeEmoji(e)}</span>}
             </button>
           );
         })}

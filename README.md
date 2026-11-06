@@ -1,6 +1,6 @@
 # runtrack.
 
-Un diario de corridas que parece hecho a mano. Anotá cada día si corriste, dónde (🌳 afuera o 🏠 adentro), la distancia y el tiempo, y mirá tu año en un tablero verde estilo GitHub.
+Un diario de corridas que parece hecho a mano. Anotá cada día si corriste, dónde (afuera o adentro), la distancia y el tiempo, y mirá tu año en un tablero verde estilo GitHub.
 
 **Probala:** https://meryboth.github.io/runtraker/
 

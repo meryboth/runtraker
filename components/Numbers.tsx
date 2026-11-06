@@ -84,7 +84,7 @@ export function Numbers({ s, onDemo }: { s: Stats; onDemo: () => void }) {
   );
 }
 
-/** Afuera vs. adentro: una barra partida con los emojis como indicador. */
+/** Afuera vs. adentro: una barra partida. */
 function Places({ s }: { s: Stats }) {
   const { outdoor, indoor, unknown } = s.places;
   const marked = outdoor.runs + indoor.runs;
@@ -94,19 +94,19 @@ function Places({ s }: { s: Stats }) {
     <div className="places">
       <h2 className="h2">dónde corrés</h2>
       {marked === 0 ? (
-        <p className="muted places-empty">Cuando cargues una corrida, marcá si fue {PLACES.outdoor.emoji} afuera o {PLACES.indoor.emoji} adentro.</p>
+        <p className="muted places-empty">Cuando cargues una corrida, marcá si fue afuera o adentro.</p>
       ) : (
         <>
           <div className="place-bar" aria-label={`${pctOut}% afuera`}>
-            {outdoor.runs > 0 && <span className="place-bar-out" style={{ flexGrow: outdoor.runs }}>{PLACES.outdoor.emoji}</span>}
-            {indoor.runs > 0 && <span className="place-bar-in" style={{ flexGrow: indoor.runs }}>{PLACES.indoor.emoji}</span>}
+            {outdoor.runs > 0 && <span className="place-bar-out" style={{ flexGrow: outdoor.runs }}>{PLACES.outdoor.label}</span>}
+            {indoor.runs > 0 && <span className="place-bar-in" style={{ flexGrow: indoor.runs }}>{PLACES.indoor.label}</span>}
           </div>
           <div className="place-legend">
             <span>
-              <b>{PLACES.outdoor.emoji} {outdoor.runs}</b> {plural(outdoor.runs, "vez", "veces")} afuera · {fmtKm(Math.round(outdoor.km))} km
+              <b>{outdoor.runs}</b> {plural(outdoor.runs, "vez", "veces")} afuera · {fmtKm(Math.round(outdoor.km))} km
             </span>
             <span>
-              <b>{PLACES.indoor.emoji} {indoor.runs}</b> adentro · {fmtKm(Math.round(indoor.km))} km
+              <b>{indoor.runs}</b> adentro · {fmtKm(Math.round(indoor.km))} km
             </span>
           </div>
           {unknown > 0 && <p className="tile-sub places-unknown">{unknown} {plural(unknown, "corrida", "corridas")} sin marcar</p>}

@@ -5,7 +5,7 @@ import { DAYS_LETTER, MONTHS_SHORT, addDays, dayLabel, dow, keyOf } from "@/lib/
 import { fmtKm } from "@/lib/format";
 import { jitter } from "@/lib/hand";
 import { levelOf } from "@/lib/stats";
-import { placeEmoji, type RunDB } from "@/lib/types";
+import { placeLabel, type RunDB } from "@/lib/types";
 
 const MAX_WEEKS = 53;
 const MIN_WEEKS = 8;
@@ -71,7 +71,7 @@ export function Board({ db, today, onOpen }: Props) {
       const j = jitter(k);
       const label = future
         ? ""
-        : `${dayLabel(d)} · ${e ? (e.ran ? `${fmtKm(e.km)} km ${placeEmoji(e)}`.trim() : "no corrí") : "sin anotar"}`;
+        : `${dayLabel(d)} · ${e ? (e.ran ? [`${fmtKm(e.km)} km`, placeLabel(e)].filter(Boolean).join(" · ") : "no corrí") : "sin anotar"}`;
       items.push(
         <button
           key={k}
